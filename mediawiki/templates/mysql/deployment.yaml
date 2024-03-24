@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-db
+  template:
+    metadata:
+      labels:
+        app: mysql-db
+    spec:
+      volumes:
+        - name: mysql-db-pvc
+          persistentVolumeClaim:
+            claimName: mysql-db-pvc
+      containers:
+      - name: mysql-db
+        image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-db-credentials
+                key: rootPassword
+          - name: MYSQL_DATABASE
+            value: "{{ .Values.mysql.database }}"
+          - name: MYSQL_USER
+            value: "{{ .Values.mysql.username }}"
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-db-credentials
+                key: password
+        resources:
+          requests:
+            cpu: "{{ .Values.mysql.resources.requests.cpu }}"
+            memory: "{{ .Values.mysql.resources.requests.memory }}"
+          limits:
+            cpu: "{{ .Values.mysql.resources.limits.cpu }}"
+            memory: "{{ .Values.mysql.resources.limits.memory }}"
+

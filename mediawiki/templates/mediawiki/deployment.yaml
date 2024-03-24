@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mediawiki-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mediawiki-app
+  template:
+    metadata:
+      labels:
+        app: mediawiki-app
+    spec:
+      volumes:
+      - name: mediawiki-app-pvc
+        persistentVolumeClaim:
+          claimName: mediawiki-app-pvc
+      containers:
+      - name: mediawiki-app
+        image: "{{ .Values.mediawiki.image.repository }}:{{ .Values.mediawiki.image.tag }}"
+        ports:
+        - containerPort: 80
+        env:
+          - name: MW_DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: mysql-db-credentials
+                key: host
+          - name: MW_DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: mysql-db-credentials
+                key: database
+          - name: MW_DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: mysql-db-credentials
+                key: username
+          - name: MW_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-db-credentials
+                key: password
+        resources:
+          requests:
+            cpu: "{{ .Values.mediawiki.resources.requests.cpu }}"
+            memory: "{{ .Values.mediawiki.resources.requests.memory }}"
+          limits:
+            cpu: "{{ .Values.mediawiki.resources.limits.cpu }}"
+            memory: "{{ .Values.mediawiki.resources.limits.memory }}"
+  {{- if .Values.mediawiki.enableBlueGreenDeployment }}
+  strategy:
+    type: Recreate
+  {{- else }}
+  strategy:
+    type: RollingUpdate
+  {{- end }}

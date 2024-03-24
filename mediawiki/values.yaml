@@ -1,0 +1,35 @@
+mediawiki:
+  image:
+    repository: satyamg137/mediawiki
+    tag: 1.35
+    pullSecret: your-dockerhub-secret
+  persistence:
+    size: 1Gi
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  blueGreenDeployment: true # Change to true for blue-green deployment
+
+mysql:
+  image:
+    repository: mysql
+    tag: 8
+#    pullSecret: your-dockerhub-secret
+  rootPassword: root_password
+  host: mysql-db
+  database: mediawiki
+  username: mysql
+  password: Market@1234!
+  persistence:
+    size: 1Gi
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
